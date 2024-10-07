@@ -26,6 +26,36 @@ export const getAllPosts = async (req, res) => {
     }
 }
 
+export const getFollowingPosts = async (req, res) => {
+    try {
+        const userId = req.userId;
+
+        const user = await User.findById(userId);
+        if (!user) {
+            return res.status(400).json({success: false, message: "User not found"})
+        }
+
+        const posts = await Post.find({user: {$in: user.following}})
+        .sort({createdAt: -1})
+        .populate({
+            path: "user",
+            select: "-password"
+        })
+        .populate({
+            path: "comments.user",
+            select: "-password"
+        })
+
+        res.status(200).json({
+            success: true,
+            feedPosts: posts
+        })
+    } catch (error) {
+        console.log(`Error in getFollowingPosts controller: ${error.message}`)
+        res.status(400).json({ success: false, message: error.message })
+    }
+}
+
 export const getLikedPosts = async (req, res) => {
     try {
         const { id: userId } = req.params;
@@ -52,6 +82,36 @@ export const getLikedPosts = async (req, res) => {
         })
     } catch (error) {
         console.log(`Error in getLikedPosts controller: ${error.message}`)
+        res.status(400).json({ success: false, message: error.message })
+    }
+}
+
+export const getUserPosts = async (req, res) => {
+    try {
+        const { username } = req.params;
+
+        const user = await User.findOne({username})
+        if (!user) {
+            return res.status(404).json({success: false, message: "User not found"})
+        }
+
+        const posts = await Post.find({user: user._id})
+        .sort({createdAt: -1})
+        .populate({
+            path: "user",
+            select: "-password"
+        })
+        .populate({
+            path: "comments.user",
+            select: "-password"
+        })
+
+        res.status(200).json({
+            success: true,
+            posts: posts
+        })
+    } catch (error) {
+        console.log(`Error in getUserPosts controller: ${error.message}`)
         res.status(400).json({ success: false, message: error.message })
     }
 }

@@ -1,3 +1,4 @@
+import Notification from "../models/notification.model.js"
 import Post from "../models/post.model.js"
 import User from "../models/user.model.js"
 
@@ -171,21 +172,35 @@ export const likeUnlikePost = async (req, res) => {
             await Post.updateOne({_id: postId}, {$pull: {likes: userId}})
             await User.updateOne({_id: userId}, {$pull: {likedPosts: postId}})
 
-            
+            const updatedPost = await Post.findById(postId)
+            res.status(200).json({
+                success: true,
+                message: "Unliked successfully",
+                updatedLikes: updatedPost.likes,
+            })
         } else {
             await Post.updateOne({_id: postId}, {$push: {likes: userId}})
             await User.updateOne({_id: userId}, {$push: {likedPosts: postId}})
 
-            //TODO: Send notification
+            const notification = new Notification({
+                from: userId,
+                to: post.user,
+                type: "like"
+            })
+
+            await notification.save();
+
+            const updatedPost = await Post.findById(postId)
+            res.status(200).json({
+                success: true,
+                message: "Liked successfully",
+                updatedLikes: updatedPost.likes,
+                notification: notification
+            })
         }
-        const updatedPost = await Post.findById(postId)
-        res.status(200).json({
-            success: true,
-            message: "Liked/Unliked successfully",
-            updatedLikes: updatedPost.likes
-        })
     } catch (error) {
-        
+        console.log(`Error in likeUnlikePost controller: ${error.message}`)
+        res.status(400).json({ success: false, message: error.message })
     }
 }
 

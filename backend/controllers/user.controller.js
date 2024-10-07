@@ -2,6 +2,7 @@ import bcryptjs from "bcryptjs";
 import { v2 as cloudinary } from "cloudinary"
 
 import User from "../models/user.model.js";
+import Notification from "../models/notification.model.js";
 
 export const getUserProfile = async (req, res) => {
     try {
@@ -89,9 +90,15 @@ export const followUnfollowUser = async (req, res) => {
             await User.findByIdAndUpdate(id, {$push: {followers: userId}})
             await User.findByIdAndUpdate(userId, {$push: {following: id}})
 
-            //TODO: Send Notification to the user
+            const notification = new Notification({
+                from: userId,
+                to: userToModify._id,
+                type: "follow"
+            })
 
-            res.status(200).json({success: true, message: "User followed successfully"})
+            await notification.save();
+
+            res.status(200).json({success: true, message: "User followed successfully", notification: notification})
         }
     } catch (error) {
         console.log(`Error in followUnfollowUser controller: ${error.message}`)

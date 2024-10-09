@@ -1,23 +1,58 @@
+import { useState } from "react";
+import { Link } from "react-router-dom";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import toast from "react-hot-toast";
+
 import { FaRegComment } from "react-icons/fa";
 import { BiRepost } from "react-icons/bi";
 import { FaRegHeart } from "react-icons/fa";
 import { FaRegBookmark } from "react-icons/fa6";
 import { FaTrash } from "react-icons/fa";
-import { useState } from "react";
-import { Link } from "react-router-dom";
+
+import LoadingSpinner from "./LoadingSpinner";
 
 const Post = ({ post }) => {
 	const [comment, setComment] = useState("");
+
+	const queryClient = useQueryClient();
+	const {data: authUser} = useQuery({queryKey: ["authUser"]})
+	const {mutate: deletePostMutation, isPending, error, isError} = useMutation({
+		mutationFn: async () => {
+			try {
+				const res = await fetch(`/api/posts/delete/${post._id}`, {
+					method: "DELETE"
+				})
+
+				const data = await res.json()
+				if (!res.ok) {
+					throw new Error(data.message || "Something went wrong")
+				}
+				console.log(data)
+				return data
+			} catch (error) {
+				console.error(`Error message: ${error.message}`)
+				throw new Error(`Error message: ${error.message}`)
+			}
+		},
+		onSuccess: () => {
+			toast.success("Post deleted successfully")
+			queryClient.invalidateQueries({queryKey: ["posts"]})
+		},
+		onError: (error) => {
+			toast.error(error.message)
+		}
+	})
+
+	const isMyPost = post.user._id === authUser.user._id;
+
 	const postOwner = post.user;
 	const isLiked = false;
-
-	const isMyPost = true;
-
 	const formattedDate = "1h";
-
 	const isCommenting = false;
 
-	const handleDeletePost = () => {};
+	const handleDeletePost = () => {
+		deletePostMutation()
+	};
 
 	const handlePostComment = (e) => {
 		e.preventDefault();
@@ -45,7 +80,8 @@ const Post = ({ post }) => {
 						</span>
 						{isMyPost && (
 							<span className='flex justify-end flex-1'>
-								<FaTrash className='cursor-pointer hover:text-red-500' onClick={handleDeletePost} />
+								{!isPending && <FaTrash className='cursor-pointer hover:text-red-500' onClick={handleDeletePost} />}
+								{isPending && <LoadingSpinner size="sm"/>}
 							</span>
 						)}
 					</div>
@@ -70,7 +106,7 @@ const Post = ({ post }) => {
 									{post.comments.length}
 								</span>
 							</div>
-							{/* We're using Modal Component from DaisyUI */}
+
 							<dialog id={`comments_modal${post._id}`} className='modal border-none outline-none'>
 								<div className='modal-box rounded border border-gray-600'>
 									<h3 className='font-bold text-lg mb-4'>COMMENTS</h3>

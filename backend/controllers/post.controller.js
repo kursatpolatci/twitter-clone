@@ -19,7 +19,7 @@ export const getAllPosts = async (req, res) => {
 
         res.status(200).json({
             success:true,
-            posts: posts
+            feedPosts: posts
         })
     } catch (error) {
         console.log(`Error in getAllPosts controller: ${error.message}`)

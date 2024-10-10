@@ -1,4 +1,7 @@
 import { Link } from "react-router-dom";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import toast from "react-hot-toast";
+
 import LoadingSpinner from "../../components/common/LoadingSpinner";
 
 import { IoSettingsOutline } from "react-icons/io5";
@@ -6,32 +9,54 @@ import { FaUser } from "react-icons/fa";
 import { FaHeart } from "react-icons/fa6";
 
 const NotificationPage = () => {
-	const isLoading = false;
-	const notifications = [
-		{
-			_id: "1",
-			from: {
-				_id: "1",
-				username: "johndoe",
-				profileImg: "/avatars/boy2.png",
-			},
-			type: "follow",
-		},
-		{
-			_id: "2",
-			from: {
-				_id: "2",
-				username: "janedoe",
-				profileImg: "/avatars/girl1.png",
-			},
-			type: "like",
-		},
-	];
+	
+	const queryClient = useQueryClient();
+	const {data, isLoading} = useQuery({
+		queryKey: ["notifications"],
+		queryFn: async () => {
+			try {
+				const res = await fetch(`/api/notifications/all`)
 
-	const deleteNotifications = () => {
-		alert("All notifications deleted");
+				const data = await res.json()
+				console.log(data)
+				if (!res.ok) {
+					throw new Error(data.message || "Something went wrong")
+				}
+				return data;
+			} catch (error) {
+				console.error(`Error message: ${error.message}`)
+				throw new Error(`Error message: ${error.message}`)
+			}
+		}
+	})
+	const {mutate: delNotificationsMutation, isPending} = useMutation({
+		mutationFn: async () => {
+			try {
+				const res = await fetch(`/api/notifications/delete`, {
+					method: "DELETE"
+				})
+
+				const data = await res.json()
+				console.log(data)
+				if (!res.ok) {
+					throw new Error(data.message || "Something went wrong")
+				}
+				return data
+			} catch (error) {
+				console.error(`Error message: ${error.message}`)
+				throw new Error(`Error message: ${error.message}`)
+			}
+		},
+		onSuccess: () => {
+			toast.success("Notifications deleted successfully")
+			queryClient.invalidateQueries({queryKey: ["notifications"]})
+		}
+	})
+
+	const deleteNotifications = (e) => {
+		e.preventDefault()
+		delNotificationsMutation()
 	};
-
 	return (
 		<>
 			<div className='flex-[4_4_0] border-l border-r border-gray-700 min-h-screen'>
@@ -56,8 +81,8 @@ const NotificationPage = () => {
 						<LoadingSpinner size='lg' />
 					</div>
 				)}
-				{notifications?.length === 0 && <div className='text-center p-4 font-bold'>No notifications 🤔</div>}
-				{notifications?.map((notification) => (
+				{data?.notifications.length === 0 && <div className='text-center p-4 font-bold'>No notifications 🤔</div>}
+				{data?.notifications.map((notification) => (
 					<div className='border-b border-gray-700' key={notification._id}>
 						<div className='flex gap-2 p-4'>
 							{notification.type === "follow" && <FaUser className='w-7 h-7 text-primary' />}

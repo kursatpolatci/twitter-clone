@@ -52,7 +52,11 @@ const UserSchema = new mongoose.Schema({
             ref: "Post",
             default: [],
         }
-    ]
+    ],
+    link: {
+        type: String,
+        default: ""
+    }
 }, {timestamps: true})
 
 const User = mongoose.model("User", UserSchema)

@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { Link, useParams } from "react-router-dom";
-import { useQuery, useQueryClient} from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 
 import { formatMemberSinceDate } from "../../utils/date";
 import Posts from "../../components/common/Posts";
@@ -24,7 +24,7 @@ const ProfilePage = () => {
 
 	const { username } = useParams()
 
-	const {data, isLoading, refetch, isRefetching} = useQuery({
+	const { data, isLoading, refetch, isRefetching } = useQuery({
 		queryKey: ["userProfile"],
 		queryFn: async () => {
 			try {
@@ -44,13 +44,12 @@ const ProfilePage = () => {
 	})
 	const { updateProfileMutation, isUpdatingProfile } = useUpdateProfile();
 	const { followMutation, isPending } = useFollow()
-	const queryClient = useQueryClient()
-	const { data: authUser } = useQuery({queryKey: ["authUser"]})
+	const { data: authUser } = useQuery({ queryKey: ["authUser"] })
 
 	const isMyProfile = data?.user._id === authUser?.user._id;
 	const memberSinceDate = formatMemberSinceDate(data?.user.createdAt)
 	const amIFollowing = authUser?.user.following.includes(data?.user._id)
-	
+
 	const handleImgChange = (e, state) => {
 		const file = e.target.files[0];
 		if (file) {
@@ -102,18 +101,18 @@ const ProfilePage = () => {
 								<input
 									type='file'
 									hidden
-                                    accept="image/*"
+									accept="image/*"
 									ref={coverImgRef}
 									onChange={(e) => handleImgChange(e, "coverImg")}
-                                    />
+								/>
 								<input
 									type='file'
 									hidden
-                                    accept="image/*"
+									accept="image/*"
 									ref={profileImgRef}
 									onChange={(e) => handleImgChange(e, "profileImg")}
 								/>
-								{/* data?.user AVATAR */}
+								{/* AVATAR */}
 								<div className='avatar absolute -bottom-16 left-4'>
 									<div className='w-32 rounded-full relative group/avatar'>
 										<img src={profileImg || data?.user.profileImg || "/avatar-placeholder.png"} />
@@ -144,7 +143,7 @@ const ProfilePage = () => {
 									<button
 										className='btn btn-primary rounded-full btn-sm text-white px-4 ml-2'
 										onClick={() => {
-											updateProfileMutation({coverImg, profileImg})
+											updateProfileMutation({ coverImg, profileImg })
 											setCoverImg(null)
 											setProfileImg(null)
 										}}
@@ -216,7 +215,7 @@ const ProfilePage = () => {
 						</>
 					)}
 
-					<Posts feedType={feedType} username={username} userId={data?.user?._id}/>
+					<Posts feedType={feedType} username={username} userId={data?.user?._id} />
 				</div>
 			</div>
 		</>

@@ -1,6 +1,6 @@
 import { Routes, Route, Navigate } from "react-router-dom"
 import { useQuery } from "@tanstack/react-query"
-import toast, { Toaster } from "react-hot-toast"
+import { Toaster } from "react-hot-toast"
 
 import HomePage from "./pages/home/HomePage"
 import SignUpPage from "./pages/auth/signup/SignUpPage"

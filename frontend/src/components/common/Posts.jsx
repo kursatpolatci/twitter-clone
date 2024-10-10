@@ -5,7 +5,7 @@ import { useQuery } from "@tanstack/react-query";
 import toast from "react-hot-toast";
 import { useEffect } from "react";
 
-const Posts = ({feedType}) => {
+const Posts = ({feedType, username, userId}) => {
 
 	const getPostEndPoint = () => {
 		switch (feedType) {
@@ -13,6 +13,10 @@ const Posts = ({feedType}) => {
 				return "/api/posts/following"
 			case "forYou":
 				return "/api/posts/all"
+			case "posts":
+				return `/api/posts/user/${username}`
+			case "likes":
+				return `/api/posts/likes/${userId}`
 			default:
 				return "/api/posts/all"
 		}
@@ -31,7 +35,7 @@ const Posts = ({feedType}) => {
 				if (!res.ok) {
 					throw new Error(data.message || "Something went wrong")
 				}
-				console.log(data)
+				console.log("data")
 				return data
 			} catch (error) {
 				console.error(`Error message: ${error.message}`)
@@ -42,7 +46,7 @@ const Posts = ({feedType}) => {
 
 	useEffect(() => {
 		refetch()
-	}, [feedType, refetch])
+	}, [refetch, feedType, username, userId])
 	return (
 		<>
 			{(isLoading || isRefetching)  && (
@@ -52,8 +56,8 @@ const Posts = ({feedType}) => {
 					<PostSkeleton />
 				</div>
 			)}
-			{!isLoading && !isRefetching && posts.feedPosts?.length === 0 && <p className='text-center my-4'>No posts in this tab. Switch 👻</p>}
-			{!isLoading && !isRefetching && posts.feedPosts && (
+			{!isLoading && !isRefetching && posts?.feedPosts.length === 0 && <p className='text-center my-4'>No posts in this tab. Switch 👻</p>}
+			{!isLoading && !isRefetching && posts?.feedPosts && (
 				<div>
 					{posts.feedPosts.map((post) => (
 						<Post key={post._id} post={post} />

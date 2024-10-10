@@ -79,7 +79,7 @@ export const getLikedPosts = async (req, res) => {
 
         res.status(200).json({
             success: true,
-            likedPosts: likedPosts
+            feedPosts: likedPosts
         })
     } catch (error) {
         console.log(`Error in getLikedPosts controller: ${error.message}`)
@@ -109,7 +109,7 @@ export const getUserPosts = async (req, res) => {
 
         res.status(200).json({
             success: true,
-            posts: posts
+            feedPosts: posts
         })
     } catch (error) {
         console.log(`Error in getUserPosts controller: ${error.message}`)

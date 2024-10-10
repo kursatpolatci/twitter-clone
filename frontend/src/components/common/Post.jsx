@@ -10,6 +10,7 @@ import { FaRegBookmark } from "react-icons/fa6";
 import { FaTrash } from "react-icons/fa";
 
 import LoadingSpinner from "./LoadingSpinner";
+import { formatPostDate } from "../../utils/date";
 
 const Post = ({ post }) => {
 	const [comment, setComment] = useState("");
@@ -77,15 +78,44 @@ const Post = ({ post }) => {
 			toast.error(likeError.message)
 		}
 	})
+	const {mutate: commentPostMutation, isPending: isCommenting, error: commentError} = useMutation({
+		mutationFn: async () => {
+			try {
+				const res = await fetch(`/api/posts/comment/${post._id}`,{
+					method: "POST",
+					headers: {
+						"Content-Type": "application/json"
+					},
+					body: JSON.stringify({text: comment})
+				})
+
+				const data = await res.json()
+				if (!res.ok) {
+					throw new Error(data.message || "Something went wrong")
+				}
+				return data;
+			} catch (error) {
+				console.error(`Error message: ${error.message}`)
+				throw new Error(`Error message: ${error.message}`)
+			}
+		},
+		onSuccess: () => {
+			toast.success("Comment posted successfully")
+			setComment("")
+			queryClient.invalidateQueries({queryKey: ["posts"]})
+		},
+		onError: (commentError) => {
+			toast.error(commentError.message)
+		}
+	})
 
 	const isMyPost = post.user._id === authUser.user._id;
 
 	const isLiked = post.likes.includes(authUser.user._id);
 
 	const postOwner = post.user;
-	
-	const formattedDate = "1h";
-	const isCommenting = false;
+
+	const formattedDate = formatPostDate(post.createdAt);
 
 	const handleDeletePost = (e) => {
 		e.preventDefault()
@@ -95,6 +125,8 @@ const Post = ({ post }) => {
 
 	const handlePostComment = (e) => {
 		e.preventDefault();
+		if (isCommenting) return
+		commentPostMutation()
 	};
 
 	const handleLikePost = (e) => {

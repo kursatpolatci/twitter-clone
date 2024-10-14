@@ -16,6 +16,9 @@ export const getNotifications = async (req, res) => {
             path: "from",
             select: "username profileImg"
         })
+        .sort({
+            createdAt: -1
+        })
 
         res.status(200).json({
             success: true,

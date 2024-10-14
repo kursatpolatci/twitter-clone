@@ -64,6 +64,31 @@ export const getSuggestedUsers = async (req, res) => {
     }
 }
 
+export const getSearchedUsers = async (req, res) => {
+    try {
+        const searchTerm = req.query.search
+        if (!searchTerm) {
+            return res.status(400).json({success: false, message: "Search term is required"})
+        }
+
+        const users = await User.find({
+            $or: [
+                {username: {$regex: searchTerm, $options: 'i'}},
+                {fullName: { $regex: searchTerm, $options: 'i'}}
+            ]
+        })
+
+        res.status(200).json({
+            success: true,
+            message: "Searched successfully",
+            users: users
+        })
+    } catch (error) {
+        console.log(`Error in getSearchedUsers controller: ${error.message}`)
+        res.status(400).json({ success: false, message: error.message })
+    }
+}
+
 export const followUnfollowUser = async (req, res) => {
     try {
         const userId = req.userId;

@@ -35,7 +35,6 @@ const SignUpPage = () => {
 				if (!res.ok) {
 					throw new Error(data.message || "Something went wrong")
 				}
-				console.log(data)
 				return data;
 			} catch (error) {
 				console.error(`Error Message: ${error.message}`)

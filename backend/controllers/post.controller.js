@@ -219,7 +219,7 @@ export const commentOnPost = async (req, res) => {
             return res.status(400).json({success:false, message: "Post not found"})
         }
 
-        post.comments.push({
+        post.comments.unshift({
             user: userId,
             text: text
         })
@@ -262,6 +262,38 @@ export const deletePost = async (req, res) => {
         })
     } catch (error) {
         console.log(`Error in deletePost controller: ${error.message}`)
+        res.status(400).json({ success: false, message: error.message })
+    }
+}
+
+export const deleteComment = async (req, res) => {
+    try {
+        const { id: postId, commentId} = req.params;
+
+        const post = await Post.findById(postId)
+        if (!post) {
+            return res.status(400).json({success: false, message: "Post not found"})
+        }
+        const commentIndex = post.comments.findIndex(comment => comment._id.toString() === commentId)
+        if (commentIndex === -1) {
+            return res.status(400).json({success:false, message: "Comment not found"})
+        }
+        
+        if ((req.userId.toString() !== post.comments[commentIndex].user._id.toString()) &&
+        (req.userId.toString() !== post.user.toString())) {
+            return res.status(400).json({success:false, message: "You do not have permission to delete"})
+        }
+
+        post.comments.splice(commentIndex, 1)
+
+        await post.save()
+        res.status(200).json({
+            success: true,
+            message: "Comment deleted successfully",
+            comments: post.comments
+        })
+    } catch (error) {
+        console.log(`Error in deleteComment controller: ${error.message}`)
         res.status(400).json({ success: false, message: error.message })
     }
 }

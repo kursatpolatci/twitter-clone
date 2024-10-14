@@ -31,7 +31,6 @@ const ProfilePage = () => {
 				const res = await fetch(`/api/users/profile/${username}`)
 
 				const data = await res.json()
-				console.log(data)
 				if (!res.ok) {
 					throw new Error(data.message || "Something went wrong")
 				}

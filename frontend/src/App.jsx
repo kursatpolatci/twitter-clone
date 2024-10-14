@@ -11,6 +11,7 @@ import ProfilePage from "./pages/profile/ProfilePage"
 import Sidebar from "./components/common/Sidebar"
 import RightPanel from "./components/common/RightPanel"
 import LoadingSpinner from "./components/common/LoadingSpinner"
+import SearchUsers from "./pages/search/SearchUsers"
 
 function App() {
   
@@ -22,7 +23,6 @@ function App() {
 
         const data = await res.json();
         
-        console.log("authUser: ", data)
         if (!res.ok) {
           throw new Error(data.message || "Someting went wrong")
         }
@@ -49,6 +49,7 @@ function App() {
         <Route path="/" element={authUser ? <HomePage /> : <Navigate to="/login" />}/>
         <Route path="/signup" element={!authUser ? <SignUpPage /> : <Navigate to="/" />}/>
         <Route path="/login" element={!authUser ? <LoginPage /> : <Navigate to="/" />}/>
+        <Route path="/search" element={authUser ? <SearchUsers /> : <Navigate to="/login" />}/>
         <Route path="/notifications" element={authUser ? <NotificationPage /> : <Navigate to="/login" />}/>
         <Route path="/profile/:username" element={authUser ? <ProfilePage /> : <Navigate to="/login" />}/>
       </Routes>
